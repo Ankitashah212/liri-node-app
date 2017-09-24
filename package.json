@@ -1,0 +1,25 @@
+{
+  "name": "liri",
+  "version": "1.0.0",
+  "description": "liri bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "index.js test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ankitashah212/liri-node-app.git"
+  },
+  "keywords": [
+    "twitter",
+    "spottify",
+    "omdb",
+    "node"
+  ],
+  "author": "ashah",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ankitashah212/liri-node-app/issues"
+  },
+  "homepage": "https://github.com/Ankitashah212/liri-node-app#readme"
+}
