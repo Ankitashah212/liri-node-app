@@ -2,6 +2,7 @@ var request = require("request");
 
 var command = process.argv[2];
 //-----------------------------------------------------------------------------------------
+//instead of writing in a simple file I am trying to learn new feature
 const log4js = require('log4js');
 log4js.configure({
   appenders: { kita: { type: 'file', filename: 'output.log' } },
@@ -9,15 +10,28 @@ log4js.configure({
 });
 
 const logger = log4js.getLogger('kita');
-logger.info('Hi');
 //------------------------------------------------------------------------------------------
 if (command == 'my-tweets') {
 
 
 }
 else if (command == 'spotify-this-song') {
+  var Spotify = require('node-spotify-api');
 
+  var spotify = new Spotify({
+    id: <your spotify client id>,
+   secret: <your spotify client secret>
+        });
+
+ spotify.search({type: 'track', query: 'All the Small Things' }, function(err, data) {
+   if (err) {
+     return console.log('Error occurred: ' + err);
+   }
+
+ console.log(data);
+ });
 }
+// OMBD portion
 else if (command == 'movie-this') {
   var movieName = process.argv[3];
 
@@ -26,7 +40,6 @@ else if (command == 'movie-this') {
 
   // Then run a request to the OMDB API with the movie specified
   var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=40e9cece";
-
   request(queryUrl, function (error, response, body) {
     if (error) {
       throw error;
@@ -34,16 +47,44 @@ else if (command == 'movie-this') {
     // If the request is successful (i.e. if the response status code is 200)
     if (response.statusCode === 200) {
 
+      var movie = JSON.parse(body);
       // Parse the body of the site to obtain data
+      //------------------------- write to console
       console.log("\n------------------- Movie Info -------------------" + "\n");
-      console.log("The movie's rating is: " + JSON.parse(body).imdbRating);
-      console.log("The movie's release year is: " + JSON.parse(body).Year + "\n");
+      console.log("Title: " + movie.Title);
+      console.log("IMDB Rating: " + movie.imdbRating);
+      console.log("Plot: " + movie.Plot);
+      console.log("Language: " + movie.Language);
+      console.log("Actors: " + movie.Actors);
+      console.log("Country: " + movie.Country);
+      if (movie.hasOwnProperty("Ratings")) {
+
+          console.log("Rotten Tomatoes rating: " + movie.Ratings[1].Value);
+        }
+      console.log("Release Year: " + movie.Year + "\n");
       console.log("------------------- Movie Info -------------------" + "\n");
+
+      //-----------------------------write to log file
+
+      logger.info("\n------------------- Movie Info -------------------" + "\n");
+      logger.info("Title: " + movie.Title);
+      logger.info("IMDB Rating: " + movie.imdbRating);
+      logger.info("Plot: " + movie.Plot);
+      logger.info("Language: " + movie.Language);
+      logger.info("Actors: " + movie.Actors);
+      logger.info("Country: " + movie.Country);
+      if (movie.hasOwnProperty("Ratings")) {
+
+          logger.info("Rotten Tomatoes rating: " + movie.Ratings[1].Value);
+        }
+      logger.info("Release Year: " + movie.Year + "\n");
+      logger.info("------------------- Movie Info -------------------" + "\n");
     }
   });
 }
 else if (command == 'do-what-it-says') {
 
-}
+
+        }
 
 
