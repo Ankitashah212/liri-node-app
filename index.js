@@ -1,11 +1,13 @@
-var request = require("request");
-var spotKey = require('./spot.js');
-var keys = require("./keys.js");
-var Twitter = require('twitter');
-
-var fs = require("fs");
-var cmd = require('node-run-cmd');
-var command = process.argv[2];
+// Declare your constants
+const request = require("request");
+const Spotify = require('node-spotify-api');
+const spotKey = require('./spot.js');
+const keys = require("./keys.js");
+const Twitter = require('twitter');
+const fs = require("fs");
+const cmd = require('node-cmd');
+const shell = require('shelljs');
+const command = process.argv[2];
 //-----------------------------------------------------------------------------------------
 //instead of writing in a simple file I am trying to learn new feature
 const log4js = require('log4js');
@@ -17,6 +19,46 @@ log4js.configure({
 //logger object to log output
 const logger = log4js.getLogger('kita');
 //------------------------------------------------------------------------------------------
+//mi functions
+//-----------------------------------------------------------------------------------------
+
+function printMovieData(movie) {
+  //------------------------- write to movie data to console
+  console.log("\n------------------- Movie Info -------------------" + "\n");
+  console.log("Title: " + movie.Title);
+  console.log("IMDB Rating: " + movie.imdbRating);
+  console.log("Plot: " + movie.Plot);
+  console.log("Language: " + movie.Language);
+  console.log("Actors: " + movie.Actors);
+  console.log("Country: " + movie.Country);
+  if (movie.hasOwnProperty("Ratings")) {
+
+    console.log("Rotten Tomatoes rating: " + movie.Ratings[1].Value);
+  }
+  console.log("Release Year: " + movie.Year + "\n");
+  console.log("------------------- Movie Info -------------------" + "\n");
+}
+
+function logMovieInfo(movie) {
+  // logging movie info to logger
+  logger.info("\n------------------- Movie Info -------------------" + "\n");
+  logger.info("Title: " + movie.Title);
+  logger.info("IMDB Rating: " + movie.imdbRating);
+  logger.info("Plot: " + movie.Plot);
+  logger.info("Language: " + movie.Language);
+  logger.info("Actors: " + movie.Actors);
+  logger.info("Country: " + movie.Country);
+  if (movie.hasOwnProperty("Ratings")) {
+
+    logger.info("Rotten Tomatoes rating: " + movie.Ratings[1].Value);
+  }
+  logger.info("Release Year: " + movie.Year + "\n");
+  logger.info("------------------- Movie Info -------------------" + "\n");
+
+}
+
+
+// if tweeter selected
 if (command == 'my-tweets') {
 
   var client = new Twitter({
@@ -30,32 +72,42 @@ if (command == 'my-tweets') {
 
   client.get('statuses/user_timeline', params, function (error, tweets, response) {
     if (!error) {
-     // console.log("Success");
+      // console.log("Success");
+      console.log("------------------- Tweets -------------------");
       for (let i = 0; i < tweets.length; i++) {
+        // log tweets
         console.log(tweets[i].created_at + " : " + tweets[i].text);
         logger.info(tweets[i].created_at + " : " + tweets[i].text);
       }
-    }else{
+      console.log("------------------- Tweets -------------------");
+    } else {
       logger.fatal("twitter hates you");
     }
   });
 }
+
+//-------------------------------------------spitify---------------------------
 else if (command == 'spotify-this-song') {
 
   //change query with argv[3]
+  var spotify = new Spotify({
+    id: spotKey.id,
+    secret: spotKey.secret
+  });
 
   spotify.search({ type: 'track', query: 'All the Small Things' }, function (err, data) {
     if (err) {
       return console.log('Error occurred: ' + err);
     }
-    if (response.statusCode == 200) {
-      console.log(data);
-    } else {
-      console.log("something went wrong");
+    else {
+
+      console.log(data.tracks.items[0]);
     }
 
   });
 }
+
+//---------------------------------------------------------------------------------------
 // OMBD portion
 else if (command == 'movie-this') {
   var movieName = process.argv[3];
@@ -71,42 +123,17 @@ else if (command == 'movie-this') {
     }
     // If the request is successful (i.e. if the response status code is 200)
     if (response.statusCode === 200) {
-
-      var movie = JSON.parse(body);
       // Parse the body of the site to obtain data
+      var movie = JSON.parse(body);
       //------------------------- write to console
-      console.log("\n------------------- Movie Info -------------------" + "\n");
-      console.log("Title: " + movie.Title);
-      console.log("IMDB Rating: " + movie.imdbRating);
-      console.log("Plot: " + movie.Plot);
-      console.log("Language: " + movie.Language);
-      console.log("Actors: " + movie.Actors);
-      console.log("Country: " + movie.Country);
-      if (movie.hasOwnProperty("Ratings")) {
-
-        console.log("Rotten Tomatoes rating: " + movie.Ratings[1].Value);
-      }
-      console.log("Release Year: " + movie.Year + "\n");
-      console.log("------------------- Movie Info -------------------" + "\n");
-
+      printMovieData(movie);
       //-----------------------------write to log file
-
-      logger.info("\n------------------- Movie Info -------------------" + "\n");
-      logger.info("Title: " + movie.Title);
-      logger.info("IMDB Rating: " + movie.imdbRating);
-      logger.info("Plot: " + movie.Plot);
-      logger.info("Language: " + movie.Language);
-      logger.info("Actors: " + movie.Actors);
-      logger.info("Country: " + movie.Country);
-      if (movie.hasOwnProperty("Ratings")) {
-
-        logger.info("Rotten Tomatoes rating: " + movie.Ratings[1].Value);
-      }
-      logger.info("Release Year: " + movie.Year + "\n");
-      logger.info("------------------- Movie Info -------------------" + "\n");
+      logMovieInfo(movie);
     }
   });
 }
+//--------------------------------------------------------------------------------------
+// running commands from js fie
 else if (command == 'do-what-it-says') {
 
   fs.readFile("random.txt", "utf8", function (error, data) {
@@ -115,11 +142,14 @@ else if (command == 'do-what-it-says') {
     if (error) {
       throw error;
     }
-
     // We will then print the contents of data
+    // This is the way I understood the project, instead of calling one of the functions
+    // I want to execute it from shell. 
     console.log(data);
-    cmd.run(data);
-
+    if (shell.exec(data).code !== 0) {
+      shell.echo('failed');
+      shell.exit(1);
+    }
   });
 }
 
