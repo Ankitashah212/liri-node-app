@@ -1,17 +1,10 @@
 var request = require("request");
-var spotify = require('./spot.js');
-//var keys = require("./keys.js").twitterKeys;
-//var Twitter = require('twitter');
+var spotKey = require('./spot.js');
+var keys = require("./keys.js");
+var Twitter = require('twitter');
+
 var fs = require("fs");
 var cmd = require('node-run-cmd');
-/*
-var client = new Twitter({
-  consumer_key: keys.consumer_key,
-  consumer_secret: keys.consumer_secret,
-  access_token_key: keys.access_token_key,
-  access_token_secret: keys.access_token_secret
-});
-*/
 var command = process.argv[2];
 //-----------------------------------------------------------------------------------------
 //instead of writing in a simple file I am trying to learn new feature
@@ -21,40 +14,31 @@ log4js.configure({
   categories: { default: { appenders: ['kita'], level: 'info' } }
 });
 
+//logger object to log output
 const logger = log4js.getLogger('kita');
 //------------------------------------------------------------------------------------------
 if (command == 'my-tweets') {
 
-  console.log("here");
+  var client = new Twitter({
+    consumer_key: keys.consumer_key,
+    consumer_secret: keys.consumer_secret,
+    access_token_key: keys.access_token_key,
+    access_token_secret: keys.access_token_secret
+  });
 
-  /*
-  var tweet = function() {
-    var params = {
-        q: '#nodejs, #Nodejs',  // REQUIRED
-        result_type: 'recent',
-        lang: 'en'
-    }
-   
-   /*
-    Twitter.get('search/tweets', params, function(err, data) {
-      // if there no errors
-      if(err){
-        console.log(err);
+  var params = { screen_name: 'ankitashah212', count: 20 };
+
+  client.get('statuses/user_timeline', params, function (error, tweets, response) {
+    if (!error) {
+     // console.log("Success");
+      for (let i = 0; i < tweets.length; i++) {
+        console.log(tweets[i].created_at + " : " + tweets[i].text);
+        logger.info(tweets[i].created_at + " : " + tweets[i].text);
       }
-        if (response.statusCode == 200) {
-      
-            var retweetId = data.statuses[0].id_str;
-            // Tell TWITTER to retweet
-           console.log("success!!!");
-        }
-        // if unable to Search a tweet
-        else {
-          console.log('Something went wrong while SEARCHING...');
-        }
-    });
-    
-}*/
-
+    }else{
+      logger.fatal("twitter hates you");
+    }
+  });
 }
 else if (command == 'spotify-this-song') {
 
