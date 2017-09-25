@@ -8,6 +8,7 @@ const fs = require("fs");
 const cmd = require('node-cmd');
 const shell = require('shelljs');
 const command = process.argv[2];
+
 //-----------------------------------------------------------------------------------------
 //instead of writing in a simple file I am trying to learn new feature
 const log4js = require('log4js');
@@ -22,8 +23,8 @@ const logger = log4js.getLogger('kita');
 //mi functions
 //-----------------------------------------------------------------------------------------
 
+//------------------------- write to movie data to console
 function printMovieData(movie) {
-  //------------------------- write to movie data to console
   console.log("\n------------------- Movie Info -------------------" + "\n");
   console.log("Title: " + movie.Title);
   console.log("IMDB Rating: " + movie.imdbRating);
@@ -39,8 +40,10 @@ function printMovieData(movie) {
   console.log("------------------- Movie Info -------------------" + "\n");
 }
 
+// logging movie info to logger
+
 function logMovieInfo(movie) {
-  // logging movie info to logger
+
   logger.info("\n------------------- Movie Info -------------------" + "\n");
   logger.info("Title: " + movie.Title);
   logger.info("IMDB Rating: " + movie.imdbRating);
@@ -57,10 +60,21 @@ function logMovieInfo(movie) {
 
 }
 
+// write tweets to file and console
 
-// if tweeter selected
-if (command == 'my-tweets') {
+function writeTweets(tweets) {
+  console.log("------------------- Tweets -------------------");
+  for (let i = 0; i < tweets.length; i++) {
+    // log tweets
+    console.log(tweets[i].created_at + " : " + tweets[i].text);
+    logger.info(tweets[i].created_at + " : " + tweets[i].text);
+  }
+  console.log("------------------- Tweets -------------------");
+}
 
+function doTheTweetyThingy() {
+
+  //creating and using a twitter client object
   var client = new Twitter({
     consumer_key: keys.consumer_key,
     consumer_secret: keys.consumer_secret,
@@ -68,22 +82,26 @@ if (command == 'my-tweets') {
     access_token_secret: keys.access_token_secret
   });
 
-  var params = { screen_name: 'ankitashah212', count: 20 };
+  //fetch tweets for username 
+  var params = { screen_name: 'trump', count: 20 };
 
   client.get('statuses/user_timeline', params, function (error, tweets, response) {
     if (!error) {
-      // console.log("Success");
-      console.log("------------------- Tweets -------------------");
-      for (let i = 0; i < tweets.length; i++) {
-        // log tweets
-        console.log(tweets[i].created_at + " : " + tweets[i].text);
-        logger.info(tweets[i].created_at + " : " + tweets[i].text);
-      }
-      console.log("------------------- Tweets -------------------");
+      writeTweets(tweets);
     } else {
       logger.fatal("twitter hates you");
     }
   });
+}
+
+//me options
+//-------------------------------------------------------------------------------------
+// if tweeter selected
+if (command == 'my-tweets') {
+
+
+  doTheTweetyThingy();
+
 }
 
 //-------------------------------------------spitify---------------------------
@@ -94,7 +112,7 @@ else if (command == 'spotify-this-song') {
     id: spotKey.id,
     secret: spotKey.secret
   });
-
+// look into response
   spotify.search({ type: 'track', query: 'All the Small Things' }, function (err, data) {
     if (err) {
       return console.log('Error occurred: ' + err);
