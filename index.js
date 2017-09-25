@@ -1,5 +1,17 @@
 var request = require("request");
-
+var spotify = require('./spot.js');
+//var keys = require("./keys.js").twitterKeys;
+//var Twitter = require('twitter');
+var fs = require("fs");
+var cmd = require('node-run-cmd');
+/*
+var client = new Twitter({
+  consumer_key: keys.consumer_key,
+  consumer_secret: keys.consumer_secret,
+  access_token_key: keys.access_token_key,
+  access_token_secret: keys.access_token_secret
+});
+*/
 var command = process.argv[2];
 //-----------------------------------------------------------------------------------------
 //instead of writing in a simple file I am trying to learn new feature
@@ -13,23 +25,52 @@ const logger = log4js.getLogger('kita');
 //------------------------------------------------------------------------------------------
 if (command == 'my-tweets') {
 
+  console.log("here");
+
+  /*
+  var tweet = function() {
+    var params = {
+        q: '#nodejs, #Nodejs',  // REQUIRED
+        result_type: 'recent',
+        lang: 'en'
+    }
+   
+   /*
+    Twitter.get('search/tweets', params, function(err, data) {
+      // if there no errors
+      if(err){
+        console.log(err);
+      }
+        if (response.statusCode == 200) {
+      
+            var retweetId = data.statuses[0].id_str;
+            // Tell TWITTER to retweet
+           console.log("success!!!");
+        }
+        // if unable to Search a tweet
+        else {
+          console.log('Something went wrong while SEARCHING...');
+        }
+    });
+    
+}*/
 
 }
 else if (command == 'spotify-this-song') {
-  var Spotify = require('node-spotify-api');
 
-  var spotify = new Spotify({
-    id: <your spotify client id>,
-   secret: <your spotify client secret>
-        });
+  //change query with argv[3]
 
- spotify.search({type: 'track', query: 'All the Small Things' }, function(err, data) {
-   if (err) {
-     return console.log('Error occurred: ' + err);
-   }
+  spotify.search({ type: 'track', query: 'All the Small Things' }, function (err, data) {
+    if (err) {
+      return console.log('Error occurred: ' + err);
+    }
+    if (response.statusCode == 200) {
+      console.log(data);
+    } else {
+      console.log("something went wrong");
+    }
 
- console.log(data);
- });
+  });
 }
 // OMBD portion
 else if (command == 'movie-this') {
@@ -59,8 +100,8 @@ else if (command == 'movie-this') {
       console.log("Country: " + movie.Country);
       if (movie.hasOwnProperty("Ratings")) {
 
-          console.log("Rotten Tomatoes rating: " + movie.Ratings[1].Value);
-        }
+        console.log("Rotten Tomatoes rating: " + movie.Ratings[1].Value);
+      }
       console.log("Release Year: " + movie.Year + "\n");
       console.log("------------------- Movie Info -------------------" + "\n");
 
@@ -75,8 +116,8 @@ else if (command == 'movie-this') {
       logger.info("Country: " + movie.Country);
       if (movie.hasOwnProperty("Ratings")) {
 
-          logger.info("Rotten Tomatoes rating: " + movie.Ratings[1].Value);
-        }
+        logger.info("Rotten Tomatoes rating: " + movie.Ratings[1].Value);
+      }
       logger.info("Release Year: " + movie.Year + "\n");
       logger.info("------------------- Movie Info -------------------" + "\n");
     }
@@ -84,7 +125,18 @@ else if (command == 'movie-this') {
 }
 else if (command == 'do-what-it-says') {
 
+  fs.readFile("random.txt", "utf8", function (error, data) {
 
-        }
+    // If the code experiences any errors it will log the error to the console.
+    if (error) {
+      throw error;
+    }
+
+    // We will then print the contents of data
+    console.log(data);
+    cmd.run(data);
+
+  });
+}
 
 

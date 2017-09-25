@@ -24,6 +24,10 @@
   "homepage": "https://github.com/Ankitashah212/liri-node-app#readme",
   "dependencies": {
     "log4js": "^2.3.3",
-    "node-spotify-api": "^1.0.7"
+    "node-cmd": "^3.0.0",
+    "node-run-cmd": "^1.0.1",
+    "node-spotify-api": "^1.0.7",
+    "twit": "^2.2.9",
+    "twitter": "^1.7.1"
   }
 }
