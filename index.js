@@ -7,7 +7,8 @@ const Twitter = require('twitter');
 const fs = require("fs");
 const cmd = require('node-cmd');
 const shell = require('shelljs');
-const command = process.argv[2];
+const inquirer = require("inquirer");
+
 
 //-----------------------------------------------------------------------------------------
 //instead of writing in a simple file I am trying to learn new feature
@@ -94,67 +95,11 @@ function doTheTweetyThingy() {
   });
 }
 
-//me options
-//-------------------------------------------------------------------------------------
-// if tweeter selected
-if (command == 'my-tweets') {
 
 
-  doTheTweetyThingy();
-
-}
-
-//-------------------------------------------spitify---------------------------
-else if (command == 'spotify-this-song') {
-
-  //change query with argv[3]
-  var spotify = new Spotify({
-    id: spotKey.id,
-    secret: spotKey.secret
-  });
-// look into response
-  spotify.search({ type: 'track', query: 'All the Small Things' }, function (err, data) {
-    if (err) {
-      return console.log('Error occurred: ' + err);
-    }
-    else {
-
-      console.log(data.tracks.items[0]);
-    }
-
-  });
-}
-
-//---------------------------------------------------------------------------------------
-// OMBD portion
-else if (command == 'movie-this') {
-  var movieName = process.argv[3];
-
-  // replace spaces and everything else that bothers a URL with more acceptable characters
-  movieName = encodeURIComponent(movieName);;
-
-  // Then run a request to the OMDB API with the movie specified
-  var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=40e9cece";
-  request(queryUrl, function (error, response, body) {
-    if (error) {
-      throw error;
-    }
-    // If the request is successful (i.e. if the response status code is 200)
-    if (response.statusCode === 200) {
-      // Parse the body of the site to obtain data
-      var movie = JSON.parse(body);
-      //------------------------- write to console
-      printMovieData(movie);
-      //-----------------------------write to log file
-      logMovieInfo(movie);
-    }
-  });
-}
-//--------------------------------------------------------------------------------------
-// running commands from js fie
-else if (command == 'do-what-it-says') {
-
-  fs.readFile("random.txt", "utf8", function (error, data) {
+function executeCommandOnShell(fileName) {
+  //read file and ecexute first line
+  fs.readFile(fileName, "utf8", function (error, data) {
 
     // If the code experiences any errors it will log the error to the console.
     if (error) {
@@ -171,4 +116,128 @@ else if (command == 'do-what-it-says') {
   });
 }
 
+// Soptify print song info for first 3 songs
+function printSpotifyData(data) {
+  //  -------------------------------------------------------------------
+  var max = 3;
+  if (data.tracks.length < max) {
+    max = data.tracks.length;
+  }
+  for (var i = 0; i < max; i++) {
+    console.log("\nsong info record number " + i + "----------------------");
+    console.log("Artist Name " + data.tracks.items[i].album.artists[0].name);
+    console.log("Preview Link " + data.tracks.items[i].preview_url);
+    console.log("Song Name " + 'All the Small Things');
+    console.log("Album Name " + data.tracks.items[i].album.name);
+    console.log("song info ----------------------------------------------\n");
+  }
+}
+function logSpoityData(data) {
+  var max = 3;
+  if (data.tracks.length < max) {
+    max = data.tracks.length;
+  }
+  for (var i = 0; i < max; i++) {
+    //  -------------------------------------------------------------------
+    logger.info("\nsong info record number " + i + "----------------------");
+    logger.info("Artist Name " + data.tracks.items[i].album.artists[0].name);
+    logger.info("Preview Link " + data.tracks.items[i].preview_url);
+    logger.info("Song Name " + 'All the Small Things');
+    logger.info("Album Name " + data.tracks.items[i].album.name);
+    logger.info("song info ----------------------------------------------\n");
+  }
+}
+
+function processSpotifyRequest(song) {
+  //change query with argv[3]
+  var spotify = new Spotify({
+    id: spotKey.id,
+    secret: spotKey.secret
+  });
+  // look into response
+  spotify.search({ type: 'track', query: song }, function (err, data) {
+    if (err) {
+      return console.log('Error occurred: ' + err);
+    }
+    else {
+
+      printSpotifyData(data);
+      logSpoityData(data);
+    }
+
+  });
+}
+
+function processOMDBRequest(name) {
+  // Then run a request to the OMDB API with the movie specified
+  var queryUrl = "http://www.omdbapi.com/?t=" + name + "&y=&plot=short&apikey=40e9cece";
+  request(queryUrl, function (error, response, body) {
+    if (error) {
+      throw error;
+    }
+    // If the request is successful (i.e. if the response status code is 200)
+    if (response.statusCode === 200) {
+      // Parse the body of the site to obtain data
+      var movie = JSON.parse(body);
+      //------------------------- write to console
+      printMovieData(movie);
+      //-----------------------------write to log file
+      logMovieInfo(movie);
+    }
+  });
+}
+//-----------------------------------------------------------------------------------------
+// inquirer
+//--------------------------------------------------------------------------------------
+
+inquirer
+  .prompt([
+
+    // Here we give the user a list of commands to choose from.
+    {
+      type: "list",
+      message: "Which kind of services do you choose?",
+      choices: ["my-tweets", "spotify-this-song", "movie-this", "do-what-it-says"],
+      name: "command"
+    },
+    {
+      type: "input",
+      message: "Please enter a user input if you wish \n or hit enter",
+      name: "input"
+    },
+
+
+  ])
+  .then(function (inquirerResponse) {
+    // If the inquirerResponse confirms, we displays the inquirerResponse's username and pokemon from the answers.
+
+    //me options
+    //-------------------------------------------------------------------------------------
+    // if tweeter selected
+    if (command == 'my-tweets') {
+      doTheTweetyThingy();
+    }
+    //-------------------------------------------spitify---------------------------
+    else if (command == 'spotify-this-song') {
+      processSpotifyRequest("");
+    }
+
+    //---------------------------------------------------------------------------------------
+    // OMBD portion
+    else if (command == 'movie-this') {
+      // replace spaces and everything else that bothers a URL with more acceptable characters
+      movieName = encodeURIComponent(movieName);;
+      processOMDBRequest(movieName);
+    }
+    //--------------------------------------------------------------------------------------
+    // running commands from js fie
+    else if (command == 'do-what-it-says') {
+
+      executeCommandOnShell("fileName");
+
+    }
+
+
+
+  });
 
